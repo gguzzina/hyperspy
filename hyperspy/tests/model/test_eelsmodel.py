@@ -16,8 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with  HyperSpy.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import numpy as np
 import pytest
+from pathlib import Path
 
 import hyperspy.api as hs
 from hyperspy.decorators import lazifyTestClass
@@ -223,3 +225,52 @@ class TestFitBackground:
                         2.14)
         assert not self.m["B_K"].active
         assert not self.m["C_K"].active
+
+
+def is_hartree_slater_raz_unavailable(self):
+    gos_root = Path(hs.preferences.EELS.eels_gos_files_path)
+    return not gos_root.is_dir()
+
+
+@pytest.mark.skipif(
+    is_hartree_slater_raz_unavailable,
+    reason="Hartree-Slater GOS Raz edges are not available, skipping",
+)
+def test_hartee_slater_raz_gos():
+    filename = os.path.join(
+        os.path.dirname(__file__),
+        "coreloss_edge_data/hartree_slater_raz_edge_archive.npz")
+    npfile = np.load(filename)
+
+    name_list = npfile["name_list"]
+    emin_list = npfile["emin_list"]
+    emax_list = npfile["emax_list"]
+    spectrum_list = npfile["spectrum_list"]
+
+    convergence_angle = npfile["convergence_angle"][()]
+    collection_angle = npfile["collection_angle"][()]
+    beam_energy = npfile["beam_energy"][()]
+
+    for iedge in range(len(name_list)):
+        name = name_list[iedge]
+        emin = emin_list[iedge][()]
+        emax = emax_list[iedge][()]
+        spectrum = spectrum_list[iedge]
+
+        element = name.split("_")[0]
+        size = len(spectrum)
+        scale = (emax - emin) / size
+
+        s = hs.signals.EELSSpectrum(np.zeros(size))
+        s.axes_manager[0].offset = emin
+        s.axes_manager[0].scale = scale
+        s.set_microscope_parameters(
+            beam_energy=beam_energy,
+            convergence_angle=convergence_angle,
+            collection_angle=collection_angle,
+        )
+        s.add_elements((element, ))
+        m = s.create_model(auto_background=False, GOS="Hartree-Slater")
+        s_edge = m.as_signal()
+
+        assert approx(spectrum, rel=0.001) == s_edge.data
