@@ -227,13 +227,13 @@ class TestFitBackground:
         assert not self.m["C_K"].active
 
 
-def is_hartree_slater_raz_unavailable(self):
+def is_hartree_slater_raz_unavailable():
     gos_root = Path(hs.preferences.EELS.eels_gos_files_path)
     return not gos_root.is_dir()
 
 
 @pytest.mark.skipif(
-    is_hartree_slater_raz_unavailable,
+    is_hartree_slater_raz_unavailable(),
     reason="Hartree-Slater GOS Raz edges are not available, skipping",
 )
 def test_hartee_slater_raz_gos():
@@ -273,4 +273,4 @@ def test_hartee_slater_raz_gos():
         m = s.create_model(auto_background=False, GOS="Hartree-Slater")
         s_edge = m.as_signal()
 
-        assert approx(spectrum, rel=0.001) == s_edge.data
+        assert pytest.approx(spectrum, rel=0.001) == s_edge.data
