@@ -227,19 +227,19 @@ class TestFitBackground:
         assert not self.m["C_K"].active
 
 
-def is_hartree_slater_raz_unavailable():
+def is_hartree_slater_rez_unavailable():
     gos_root = Path(hs.preferences.EELS.eels_gos_files_path)
     return not gos_root.is_dir()
 
 
 @pytest.mark.skipif(
-    is_hartree_slater_raz_unavailable(),
-    reason="Hartree-Slater GOS Raz edges are not available, skipping",
+    is_hartree_slater_rez_unavailable(),
+    reason="Rez Hartree-Slater GOS data is not available, skipping",
 )
-def test_hartee_slater_raz_gos():
+def test_hartee_slater_rez_gos():
     filename = os.path.join(
         os.path.dirname(__file__),
-        "coreloss_edge_data/hartree_slater_raz_edge_archive.npz")
+        "coreloss_edge_data/hartree_slater_rez_edge_archive.npz")
     npfile = np.load(filename)
 
     name_list = npfile["name_list"]

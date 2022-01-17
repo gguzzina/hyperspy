@@ -82,7 +82,7 @@ def make_file_with_h_s_spectra(
         h_s_gos_file_path=None,
     ):
     if filename is None:
-        filename = "hartree_slater_raz_edge_archive.npz"
+        filename = "hartree_slater_rez_edge_archive.npz"
     if z_range is None:
         z_range = range(3, 84)
     if h_s_gos_file_path is None:
